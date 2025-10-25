@@ -28,7 +28,8 @@
 
 
 # To do
-- [] Make the workflow more automated 
+- [OK] Make the workflow more automated
+   - Missing autom of plotHLT.py
 - [] Setup enviroment properly in CenOS9
 - [] Intergate nanoAOD tool data format for object selection
 - [] Check the btag change during data taking
