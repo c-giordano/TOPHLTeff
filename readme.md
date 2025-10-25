@@ -5,17 +5,22 @@
 
 
 # Get input nanoAOD list
-- ```python3 generateInputList.py```
+- ```bash generateInputList.sh```
+- In the bash script, add commands such as
+- ```python3 generateInputList.py --tag <2025C, 2025D, 2025D...>```
 
 # Skim nanoAOD
 - Test locally 
    ```python3 skimNano.py```
 - Submit jobs
-    ```python3 subJobs.py```
+    ```bash subJobs.sh```
+    That submits commands such as
+    ```python3 subJobs.py --tag <EGamma2025C> --jobVersion <outut_directory>```
     - check job
 
 # Plot HLT efficiency
 - Generate HLT efficieny hists
+```bash plotHLT.sh```
 ```python3 plotHLT.py```
 
 - Plot efficieny 
