@@ -15,6 +15,7 @@ def parse_args():
     parser.add_argument("--offline", default="ttH", help='Offline selection: "ttH", "ttbar", or a custom selection string')
     parser.add_argument("--isTest", action="store_true", help="Run in test mode (process only 10k events)")
     parser.add_argument("--ifMuonHLT", action="store_true", help="Use muon HLT (for lepton mode)")
+    parser.add_argument("--otherCuts", action="store", default="", help="to select on the run")
     return parser.parse_args()
 
 def main():
@@ -22,9 +23,12 @@ def main():
 
     offline_map = {
         "ttH": "HT>500. && nj>5 && nb>1 && HLT_IsoMu24==1 && jet_6pt>40.",
-        "ttbar": "ne==1 && ele_1pt>16. && nj>2 && nb>1 && HLT_IsoMu24==1 && HT>200."
+        "ttbar_ele": "ne==1 && ele_1pt>16. && nj>2 && nb>1 && HLT_IsoMu24==1 && HT>200.",
+        "ttbar_mu": "nm==1 && muon_1pt>14. && nj>2 && nb>1 && HLT_Ele30_WPTight_Gsf==1 && HT>200."
     }
     offline = offline_map.get(args.offline, args.offline)
+    if args.otherCuts:
+        offline = f"({offline}) && ({args.otherCuts})"
 
     outFile = create_output_file(args.inputDir, args.outVersion, args.isTest)
 
@@ -72,20 +76,26 @@ def run_leptonic_analysis(inputDir, outFile, offline, era, ifMuonHLT):
     print('Initial entries:', df.Count().GetValue())
 
     if ifMuonHLT:
-        single, cross, lep, label = 'HLT_IsoMu24', 'HLT_Mu12_IsoVVL_PFHT150_PNetBTag0p53', 'muon', '#mu'
+        single, cross, lep, label = 'HLT_IsoMu24', 'HLT_Mu12_IsoVVL_PFHT150_PNetBTag0p53', 'muon', 'Mu'
     else:
-        single, cross, lep, label = 'HLT_Ele30_WPTight_Gsf', 'HLT_Ele14_eta2p5_IsoVVVL_Gsf_PFHT200_PNetBTag0p53', 'ele', 'e'
+        single, cross, lep, label = 'HLT_Ele30_WPTight_Gsf', 'HLT_Ele14_eta2p5_IsoVVVL_Gsf_PFHT200_PNetBTag0p53', 'ele', 'Ele'
 
     bins = {
-        'pt': np.array((0., 16, 20, 25, 30, 35, 45, 300)),
+        # Old Binning ##################
+        # 'pt': np.array((0., 16, 20, 25, 30, 35, 45, 300)),
+        # 'eta': np.array((-2.5, -2.2, -1.8, -1.4, -1.0, -0.6, 0.6, 1.0, 1.4, 1.8, 2.2, 2.5)),
+        # 'HT': np.array((0., 100, 125, 150, 175, 200, 225, 250, 300, 350, 400, 500, 1000))
+        ################################
+        'pt': np.array((0., 16, 20, 25, 30, 35, 45, 65, 100, 200, 300)),
         'eta': np.array((-2.5, -2.2, -1.8, -1.4, -1.0, -0.6, 0.6, 1.0, 1.4, 1.8, 2.2, 2.5)),
-        'HT': np.array((0., 100, 125, 150, 175, 200, 225, 250, 300, 350, 400, 500, 1000))
+        'HT': np.array((0., 100, 125, 150, 175, 200, 225, 250, 300, 350, 400, 500, 750, 1000))
+
     }
 
     variables = [
         (f"{lep}_1pt", bins['pt'], f"p_{{T}}^{{1st lep}}(GeV)"),
         (f"{lep}_1eta", bins['eta'], f"#eta^{{1st lep}}"),
-        ('HT', bins['HT'], 'HT(GeV)')
+        ('HT', bins['HT'], f"H_{{T}}")
     ]
 
     histList = []

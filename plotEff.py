@@ -1,180 +1,225 @@
+#!/usr/bin/env python3
 import os
+import shutil
+import argparse
 import ROOT
 import plotHelper as ph
 import usefulFunc as uf
 
+parser = argparse.ArgumentParser(description="Overlay HLT efficiencies")
+parser.add_argument("--user",type=str, default=os.environ.get("USER", ""),help="EOS username to build base paths")
+parser.add_argument("--version", type=str, default="v1", help="Output version name (e.g. v1, v2)")
+# hadronic / muon / electron
+parser.add_argument("--hlt", choices=["hadronic", "muon", "electron"], required=True, help="HLT families hadronic, muon or electron")
+parser.add_argument("--eras", nargs="+", help="List of eras for normal overlay")
+parser.add_argument("--include-2024", action="store_true", help="If set, append 2024I ")
+# special case
+parser.add_argument("--special", action="store_true", help="Compare pre/post digi-morphing for a single era")
+parser.add_argument("--specialEra",type=str, default="2025G", help="Era used for digi comparison (default: 2025G), ignored if --special is not set")
+parser.add_argument("--inputDir", type=str, default=None, help="(es. v5ForMuon2025_10)")
 
-def main():
-    # in2024D = '/eos/home-h/hhua/forTopHLT/2024D/v2HadronicWithRdataframe/result/eff.root'
-    # in2024E = '/eos/home-h/hhua/forTopHLT/2024E/v2HadronicWithRdataframe/result/eff.root'
-    # in2024C = '/eos/home-h/hhua/forTopHLT/2024C/v2HadronicWithRdataframe/result/eff.root'
-    # ifHadronic =True
-    # effList = [
-    # #     '/eos/home-h/hhua/forTopHLT/2024C/v2HadronicWithRdataframe/result/v0ttHPhasephase/eff.root',
-    # #     '/eos/home-h/hhua/forTopHLT/2024D/v2HadronicWithRdataframe/result/v0ttHPhasephase/eff.root',
-    # #     '/eos/home-h/hhua/forTopHLT/2024E/v2HadronicWithRdataframe/result/v0ttHPhasephase/eff.root',
-    #         '/eos/user/h/hhua/forTopHLT/2024F/v1ForHadronic/result/v0ttHPhasephase/eff.root',
-        #    '/eos/user/h/hhua/forTopHLT/2024C/v1ForHadronicV2/result/v0ttHPhasephase/eff.root',
-        #    '/eos/user/h/hhua/forTopHLT/2024D/v1ForHadronicV2/result/v0ttHPhasephase/eff.root',
-        #    '/eos/user/h/hhua/forTopHLT/2024E/v1ForHadronicV2/result/v0ttHPhasephase/eff.root',
-        #    '/eos/user/h/hhua/forTopHLT/2024F/v1ForHadronicV2/result/v0ttHPhasephase/eff.root',
-        #    '/eos/user/h/hhua/forTopHLT/2024G/v1ForHadronic/result/v0ttHPhasephase/eff.root', 
-        #    '/eos/user/h/hhua/forTopHLT/2024H/v1ForHadronic/result/v0ttHPhasephase/eff.root', 
-        #    '/eos/user/h/hhua/forTopHLT/2024I/v1ForHadronic/result/v0ttHPhasephase/eff.root', 
-        # '/eos/user/h/hhua/forTopHLT/2024G/v1ForHadronic_partial/result/v0ttHPhasephase_preMD3/eff.root',
-        # '/eos/user/h/hhua/forTopHLT/2024G/v1ForHadronic_partial/result/v0ttHPhasephase_postMD3/eff.root',
-    # ]
-    # HLT = 'HLTAll'
-    # HLT = 'HH'
-    legendList = []#empty list will use the era as legend
-    
-    
-    effList = [
-    #     # '/eos/home-h/hhua/forTopHLT/2024D/v1EleTTPhase/result/v0tt/eff.root',
-    #     # '/eos/home-h/hhua/forTopHLT/2024E/v1EleTTPhase/result/v0tt/eff.root',
-        # '/eos/home-h/hhua/forTopHLT/2024D/v1EleTTPhase/result/v1ttAndHT200/eff.root',
-        # '/eos/home-h/hhua/forTopHLT/2024E/v1EleTTPhase/result/v1ttAndHT200/eff.root',
-        # '/eos/user/h/hhua/forTopHLT/2024F/v1EleTTPhase/result/v1ttAndHT200/eff.root',
-        # '/eos/user/h/hhua/forTopHLT/2024G/v1EleTTPhase/result/v1ttAndHT200/eff.root',
-        # '/eos/user/h/hhua/forTopHLT/2024F/v1MuonTTPhase/result/v1ttAndHT200/eff.root',
-        # '/eos/user/h/hhua/forTopHLT/2024G/v1EleTTPhase/result/v1ttAndHT200_preMD3/eff.root',
-        # '/eos/user/h/hhua/forTopHLT/2024G/v1EleTTPhase/result/v1ttAndHT200_postMD3/eff.root',
-        # '/eos/user/h/hhua/forTopHLT/2024H/v1EleTTPhase/result/v1ttAndHT200/eff.root',
-        # '/eos/user/h/hhua/forTopHLT/2024I/v1EleTTPhase/result/v1ttAndHT200/eff.root',
-        
-        # '/eos/user/h/hhua/forTopHLT/2024D/v1MuonTTPhase/result/v1ttAndHT200/eff.root',
-        # '/eos/user/h/hhua/forTopHLT/2024E/v1MuonTTPhase/result/v1ttAndHT200/eff.root',
-        '/eos/user/h/hhua/forTopHLT/2024F/v1MuonTTPhase/result/v1ttAndHT200/eff.root',
-        # '/eos/user/h/hhua/forTopHLT/2024G/v1MuonTTPhase/result/v1ttAndHT200/eff.root',
-        # '/eos/user/h/hhua/forTopHLT/2024H/v1MuonTTPhase/result/v1ttAndHT200/eff.root',
-        # '/eos/user/h/hhua/forTopHLT/2024I/v1MuonTTPhase/result/v1ttAndHT200/eff.root',
-    ]
-    # HLT = 'HLTbothEle'
-    # HLT = 'HLTcrossEle'
-    # HLT = 'HLTcrossMu'
-    HLT = 'HLTbothMu'
-    # legendList = ['2024G_preMD', '2024G_postMD']
-    
-    
-    
-    
-    effVsEras(effList, HLT, legendList)
-    # effVsEras(effList, ifHadronic)
-    
-    # eff_HHVsAll(effList[2])
+args = parser.parse_args()
 
-def eff_HHVsAll(inputList):
-    varList = ['HT', 'jet_6pt', 'nb']
-    for iVar in varList:
-        eff_hardAll = ph.getEffFromFile(inputList, [f'de_{iVar}_HLTAll', f'nu_{iVar}_HLTAll'])
-        eff_HH = ph.getEffFromFile(inputList, [f'de_{iVar}_HH', f'nu_{iVar}_HH'])
-        effList = [eff_hardAll, eff_HH]
-        # legendList = ['Hardronic triggers', 'HH parking trigger'] 
-        legendList = ['HT450+6jet+1btag || HT400+6jet+2btag || HT330+4jet+3btag', 'HT280+4jet+2btag']
-    
-        xmin = effList[0].GetTotalHistogram().GetXaxis().GetXmin()
-        xmax = effList[0].GetTotalHistogram().GetXaxis().GetXmax()
-        plotName = f'{getOutDir(inputList)}HLTEff_{iVar}_HHVsAll.png'
-        ph.plotOverlay(effList, legendList, 'L1T+HLT efficiency', plotName, xmin, xmax, ['2024E'], [0, 1.1], [0.2, 0.25, 0.9, 0.5])
-        
+if args.user == ['cgiordan']: user_dir = 'c/cgiordan'
+elif args.user == ['easilar']: user_dir = 'e/easilar'
 
-def effVsEras(inputList, HLT='HLTAll', legendList=[]):
-    outDir = getOutDir(inputList[0])
-   
-    triggerVarMap = {
-        'HLTAll': ['HT', 'jet_6pt', 'nb'],
-        'HH': ['HT', 'jet_6pt', 'nb'],
-        'HLTcrossEle': ['ele_1pt', 'ele_1eta', 'HT'],
-        'HLTbothEle': ['ele_1pt', 'ele_1eta', 'HT'],
-        'HLTcrossMu': ['muon_1pt', 'muon_1eta', 'HT'],
-        'HLTbothMu': ['muon_1pt', 'muon_1eta', 'HT'],
-    }
-    
-    # for iVar in varList:
-    for iVar in triggerVarMap[HLT]:
+# variables dictionary
+triggerVarMap = {
+    "HLTAll":      ["HT", "jet_6pt", "nb"],
+    "HLTAll_2b":   ["nb", "jet_6pt", "HT"],
+    "HLTAll_1b":   ["nb", "jet_6pt", "HT"],
+    "HLTAll_3b":   ["nb", "jet_6pt", "HT"],
+    "HLTAll_4b":   ["nb", "jet_6pt", "HT"],
+    "HH":          ["HT", "jet_6pt", "nb"],
+    "HLTcrossEle": ["ele_1pt", "ele_1eta", "HT"],
+    "HLTbothEle":  ["ele_1pt", "ele_1eta", "HT"],
+    "HLTsingleEle":["ele_1pt", "ele_1eta", "HT"],
+    "HLTcrossMu":  ["muon_1pt", "muon_1eta", "HT"],
+    "HLTbothMu":   ["muon_1pt", "muon_1eta", "HT"],
+    "HLTsingleMu": ["muon_1pt", "muon_1eta", "HT"],
+}
+
+# set of triggers
+HLT_BY_FAMILY = {
+    "hadronic":     [ "HLTAll", "HH", "HLTAll_1b", "HLTAll_2b", "HLTAll_3b", "HLTAll_4b"],
+    "muon":         [ "HLTcrossMu", "HLTbothMu", "HLTsingleMu" ],
+    "electron":     [ "HLTcrossEle", "HLTbothEle", "HLTsingleEle" ],
+}
+
+
+def build_eff_path(hlt_family, era, stage=None):
+    """
+    Path to eff.root file
+    """
+    base_dir = os.path.join("/eos/user", args.user[0], args.user, "forTopHLT")
+
+    campaign_dir = args.inputDir
+    if campaign_dir is None:
+        raise RuntimeError("--inputDir is required to build the path (e.g. v5ForMuon2025_10)")
+
+    # 2025X
+    if era.startswith("2025"):
+        if hlt_family == "hadronic":
+            tag_base = "v5Hadronic_{}".format(era)
+        elif hlt_family == "muon":
+            tag_base = "v5Muon_{}".format(era)
+        elif hlt_family == "electron":
+            tag_base = "v5Electron_{}".format(era)
+        else:
+            raise ValueError("Unknown HLT family: {}".format(hlt_family))
+
+        if stage is None:
+            tag = tag_base
+        elif stage == "preDigi":
+            tag = "{}_preDigi".format(tag_base)
+        elif stage == "postDigi":
+            tag = "{}_postDigi".format(tag_base)
+        else:
+            raise ValueError("Unknown stage: {}".format(stage))
+
+        return "{}/{}/{}/result/{}/eff.root".format(base_dir, era, campaign_dir, tag)
+
+    # 2024I
+    if era == "2024I":
+        if hlt_family == "hadronic":
+            campaign = "v1ForHadronic2024"; tag = "v2ttHPhaseSpace_2024I"
+        elif hlt_family == "muon":
+            campaign = "v1ForMuon2024I";    tag = "v5Muon_2024I"
+        elif hlt_family == "electron":
+            campaign = "v1ForEle2024I";     tag = "v1ttAndHT200_2024I"
+        else:
+            raise ValueError("Unknown HLT family: {}".format(hlt_family))
+        return "{}/{}/{}/result/{}/eff.root".format(base_dir, era, campaign, tag)
+
+    raise ValueError("Unsupported era: {}".format(era))
+
+
+
+def getOutDir(isHadronic, HLT, version):
+    base_dir = os.path.join("/eos/user", args.user[0], args.user, "www/forTopHLT")
+    subdir = "Hadronic" if isHadronic else "Leptonic"
+    out_dir = os.path.join(base_dir, subdir, HLT, version)
+
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir, exist_ok=True)
+    return out_dir + "/"
+
+def copy_index_file(outDir):
+    """
+    Copy index.php from www tooutput directory
+    """
+    src_index = "/eos/user/c/cgiordan/www/index.php"
+    dst_index = os.path.join(outDir, "index.php")
+
+    if not os.path.exists(src_index):
+        print(f"WARNING: Source index.php not found at {src_index}")
+        return
+
+    try:
+        shutil.copyfile(src_index, dst_index)
+        print(f"Copied index.php to {dst_index}")
+    except Exception as e:
+        print(f"Failed to copy index.php: {e}")
+
+
+
+def effVsEras(inputList, HLT, legendList, isHadronic, version):
+    """
+    Draw eff.root (inputList) for all the triggerVarMap[HLT]
+    """
+    outDir = getOutDir(isHadronic, HLT, version)
+    copy_index_file(outDir)
+
+    var_list = triggerVarMap[HLT]
+
+    for var in var_list:
         effList = []
         eraList = []
-        for iEff in inputList:
-            eff = ph.getEffFromFile(iEff, [f'de_{iVar}_{HLT}', f'nu_{iVar}_{HLT}'])
-            era = uf.extract_era_from_path(iEff)
+
+        for eff_file in inputList:
+            eff = ph.getEffFromFile(eff_file, [f"de_{var}_{HLT}", f"nu_{var}_{HLT}"])
+            era = uf.extract_era_from_path(eff_file)
             effList.append(eff)
             eraList.append(era)
-        print(effList)
-        
+
+        if not effList:
+            print(f"No efficiency file found for var={var}, HLT={HLT}")
+            continue
+
         xmin = effList[0].GetTotalHistogram().GetXaxis().GetXmin()
         xmax = effList[0].GetTotalHistogram().GetXaxis().GetXmax()
-        
-        plotName =  f'{outDir}HLTEff_{iVar}_{HLT}.png'
-        if not legendList:
-            legendList = eraList
-        ph.plotOverlay(effList, legendList,  'L1T+HLT efficiency', plotName, xmin, xmax, eraList, [0, 1.1])
-    
-    
-    
 
-def plotEffOverLayEle(in2023B, in2023C, in2023D, in2022):
-    plotEffOverlay(in2023B, in2023C, in2023D, in2022, 'eleJet', 'ele1pt')
-    plotEffOverlay(in2023B, in2023C, in2023D, in2022, 'eleHT', 'ele1pt')
-    # plotEffOverlay(in2023B, in2023C, in2023D, in2022, 'singleEleJet', 'ele1pt')
-    # plotEffOverlay(in2023B, in2023C, in2023D, in2022, 'singleEleHT', 'ele1pt')
-        
-    
-def plotOverLayHard(in2023D, in2024C): 
-    # plotEffOverlay(in2023D, in2024C, trigger='1btag', ifHadronic=True)
-    # plotEffOverlay(in2023D, in2024C, trigger='2btag', ifHadronic=True)
-    # plotEffOverlay(in2023D, in2024C, trigger='both', ifHadronic=True)
-    
-    # plotEffOverlay(in2023D, in2024C, '1btag', 'bjetNum', ifHadronic=True)
-    # plotEffOverlay(in2023D, in2024C, '2btag', 'bjetNum', ifHadronic=True)
-    # plotEffOverlay(in2023D, in2024C, 'both', 'bjetNum', ifHadronic=True)
-    
-    # plotEffOverlay(in2023D, in2024C, '1btag', 'HT', ifHadronic=True)
-    # plotEffOverlay(in2023D, in2024C, '2btag', 'HT', ifHadronic=True)
-    plotEffOverlay(in2023D, in2024C, 'both', 'HT', ifHadronic=True)
-    
-    
-    
-def plotEffOverlay(in2023D, in2024C, trigger='1btag', var = 'jetNum', ifHadronic=False):    
+        plotName = f"{outDir}HLTEff_{var}_{HLT}.png"
 
-    if ifHadronic:
-        # eff_2023B = ph.getEffFromFile(in2023B, ['de_'+var, 'nu_'+var+'_'+trigger])
-        # eff_2023C = ph.getEffFromFile(in2023C, ['de_'+var, 'nu_'+var+'_'+trigger])
-        eff_2023D = ph.getEffFromFile(in2023D, ['de_'+var, 'nu_'+var+'_'+trigger])
-        eff_2024C = ph.getEffFromFile(in2024C, ['de_'+var, 'nu_'+var+'_'+trigger])
-        xmin, xmax = ph.getXrangeFromFile(in2024C, ['de_'+var, 'nu_'+var+'_'+trigger])
+        this_legend = legendList if legendList is not None else eraList
+
+        ph.plotOverlay(
+            effList,
+            this_legend,
+            "L1T+HLT efficiency",
+            plotName,
+            xmin,
+            xmax,
+            eraList,      # usi le ere come “label tecnica” per colori/stili
+            [0, 1.1]
+        )
+
+
+# =======================
+#   MAIN
+# =======================
+
+def main():
+    isHadronic = (args.hlt == "hadronic")
+
+    if args.special:
+        era = args.specialEra
+        effList = [
+            build_eff_path(args.hlt, era, stage="preDigi"),
+            build_eff_path(args.hlt, era, stage="postDigi"),
+        ]
+        legendList = [
+            f"{era} (pre digi-morphing)",
+            f"{era} (post digi-morphing)",
+        ]
+        eras_info = [era]
+
     else:
-        # eff_2023B = ph.getEffFromFile(in2023B, ['de_'+var+'_'+trigger, 'nu_'+var+'_'+trigger])
-        # eff_2023C = ph.getEffFromFile(in2023C, ['de_'+var+'_'+trigger, 'nu_'+var+'_'+trigger])
-        eff_2023D = ph.getEffFromFile(in2023D, ['de_'+var+'_'+trigger, 'nu_'+var+'_'+trigger])
-        eff_2024 = ph.getEffFromFile(in2022, ['de_'+var+'_'+trigger, 'nu_'+var+'_'+trigger])
-        xmin, xmax = ph.getXrangeFromFile(in2022, ['de_'+var+'_'+trigger, 'nu_'+var+'_'+trigger])
-        
-    histList = [eff_2024C,eff_2023D]
-    #legendList = ['2024C', '2023D']
-    legendList = ['2024D_preCalib', '2024D_postCalib']
-    #histList = [eff_2023B, eff_2023C]
-    #legendList = ['2023B', '#splitline{2023C}{#splitline{(pre HCAL}{scale change)}}']
-    outDir = getOutDir(in2024C) 
-    plotName = outDir + 'HLTEff_'+var+'_'+trigger+'.png'
-    ph.plotOverlay(histList, legendList, '2023', 'L1T+HLT efficiency', plotName, xmin, xmax, [0, 1.1])
-   
+        # standard: multiple eras overlay
+        if args.eras:
+            eras = args.eras
+        else:
+            # default ragionevole
+            eras = ["2025C", "2025D", "2025E", "2025F", "2025G"]
 
- 
-    
+        if args.include_2024 and "2024I" not in eras:
+            eras.append("2024I")
 
- 
-   
-    
-def getOutDir(inputFile):
-    inputDir = inputFile.rsplit('/', 1)[0] +'/'
-    outDir = inputDir+'results/'
-    if not os.path.exists(outDir):
-        os.makedirs(outDir)
-    return outDir
-     
-    
-        
-    
-if __name__=='__main__':
-    main() 
-    
+        effList = [build_eff_path(args.hlt, era) for era in eras]
+        legendList = eras[:]  # copia
+        eras_info = eras
+
+    hlt_list = HLT_BY_FAMILY[args.hlt]
+
+    print("HLT family:", args.hlt)
+    print("special:", args.special)
+    print("Eras:", eras_info)
+    print("Input files:")
+    for f in effList:
+        print("  ", f)
+    print("What to plot:", ", ".join(hlt_list))
+
+    # 3) Loop su tutti i trigger fisici
+    for trig in hlt_list:
+        print(f"\n>>> Plot HLT = {trig}")
+        effVsEras(
+            inputList=effList,
+            HLT=trig,
+            legendList=legendList,
+            isHadronic=isHadronic,
+            version=args.version
+        )
+
+
+if __name__ == "__main__":
+    main()

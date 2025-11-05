@@ -54,7 +54,7 @@ def extract_era_from_path(path):
 
 def checkMakeDir( folder ):
     if not os.path.exists( folder ):
-        os.mkdir( folder )
+        os.makedirs( folder, exist_ok=True)
         
 # def getPath()
 

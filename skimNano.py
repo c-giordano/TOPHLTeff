@@ -12,6 +12,12 @@ triggerSwitchedMap = {
     '2024G': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
     '2024I': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
     '2024H': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
+    '2025B': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
+    '2025C': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
+    '2025D': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
+    '2025E': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
+    '2025F': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
+    '2025G': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
 } 
 
 def main(inputNano = '/store/data/Run2023B/Muon0/NANOAOD/PromptNanoAODv11p9_v1-v2/60000/06d25571-df3e-4ceb-9e44-7452add3e004.root', outDir = './output/', ifForHadronic = True,   ifTest = True):
@@ -195,9 +201,9 @@ def process_arguments():
     # Add arguments
     parser.add_argument('--input', type=str, default=input)
     parser.add_argument('--outDir', type=str, default='./output/')
-    # parser.add_argument('--ifHardronic', type=bool, default=True)
+    # parser.add_argument('--ifHadronic', type=bool, default=True)
     # parser.add_argument('--ifTest', type=bool, default=True)
-    parser.add_argument('--ifHardronic', type=str2bool, default=True, help='Boolean flag for hadronic')
+    parser.add_argument('--ifHadronic', type=str2bool, default=True, help='Boolean flag for hadronic')
     parser.add_argument('--ifTest', type=str2bool, default=True, help='Boolean flag for test mode')
 
 
@@ -208,7 +214,7 @@ def process_arguments():
     arguments = {
         'input': args.input,
         'outDir': args.outDir,
-        'ifHardronic': args.ifHardronic,
+        'ifHadronic': args.ifHadronic,
         'ifTest': args.ifTest
     }
 
@@ -229,5 +235,5 @@ def str2bool(value):
 
 if __name__=='__main__':
     args = process_arguments()
-    main(args['input'], args['outDir'], args['ifHardronic'], args['ifTest'])
+    main(args['input'], args['outDir'], args['ifHadronic'], args['ifTest'])
 
