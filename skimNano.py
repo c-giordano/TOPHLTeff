@@ -1,6 +1,7 @@
 import ROOT
 import os
 import argparse
+import json
 
 import usefulFunc as uf
 
@@ -20,16 +21,16 @@ triggerSwitchedMap = {
     '2025G': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
 } 
 
-def main(inputNano = '/store/data/Run2023B/Muon0/NANOAOD/PromptNanoAODv11p9_v1-v2/60000/06d25571-df3e-4ceb-9e44-7452add3e004.root', outDir = './output/', ifForHadronic = True,   ifTest = True):
+def main(inputNano = '/store/data/Run2023B/Muon0/NANOAOD/PromptNanoAODv11p9_v1-v2/60000/06d25571-df3e-4ceb-9e44-7452add3e004.root', outDir = './output/', ifForHadronic = True,   ifTest = True, hltJSON='ownershipJson.json'):
     #!test default input files in parse_arguments()
     print('inputNano: ', inputNano)
     print('outDir: ', outDir, 'ifForHadronic: ', ifForHadronic, 'ifTest: ', ifTest)
     inputNano = 'root://cmsxrootd.fnal.gov/'+ inputNano
-    preSel(inputNano,  outDir, ifForHadronic, ifTest)#faster run time with rDataFrame
+    preSel(inputNano,  outDir, ifForHadronic, ifTest, hltJSON)#faster run time with rDataFrame
     
     # selLoop(chain, branches_to_keep, outDir, ifForHadronic, ifTest)#!obsolete, keep it for now
     
-def preSel(inputNano,  outDir, ifForHadronic, ifTest):
+def preSel(inputNano,  outDir, ifForHadronic, ifTest, hltJSON):
     #faster and better with rDataFrame:)
     ROOT.gInterpreter.Declare("""
     #include <vector>
@@ -109,15 +110,45 @@ def preSel(inputNano,  outDir, ifForHadronic, ifTest):
     df = df.Define('muon_1eta', 'nm>0 ? selectedMuons[0].Eta() : -1')
     df = df.Define('muon_1phi', 'nm>0 ? selectedMuons[0].Phi() : -1')
 
-    
-    preSelect = 'nj>5 && HT>500. && nb>1'
+    def get_top_triggers_from_json(json_path, df):
+        """
+        reads JSON HLT menu file and gives back a list of HLT branches belonging to TOP.
+        """
+        with open(json_path) as f:
+            menu = json.load(f)
+
+        cols = set(df.GetColumnNames())
+
+        top_triggers = []
+        for name, info in menu.items():
+            # json structure : "MyHLTPath_v": {"online?": true, "owners": [...]}
+            if not isinstance(info, dict):
+                continue
+
+            owners = info.get("owners", [])
+            if "TOP" not in owners:
+                continue
+
+            # "HLT_XXX_v" to "HLT_XXX"
+            branch_name = name[:-2] if name.endswith("_v") else name
+            if branch_name in cols:
+                top_triggers.append(branch_name)
+
+        # remove duplicates
+        top_triggers = list(dict.fromkeys(top_triggers))
+        return top_triggers
+
+
+
+    # preSelect = 'nj>5 && HT>500. && nb>1'
+    preSelect = 'nj>=4 && HT>=200. && nb>=1' # new loosened cut
     if not ifForHadronic:
         ifEleDataset = inputNano.find('EGamma')!=-1
         print('ifEleDataset: ', ifEleDataset)
         if not ifEleDataset:#for ele trigger
-            preSelect = 'ne==1 && ele_1pt>16. && nj>2 && nb>1' #typical tt phase space
+            preSelect = 'ne==1 && ele_1pt>16. && nj>=2 && nb>=1' #typical tt phase space (switched from nj>2 to nj>=2)
         else: 
-            preSelect = 'nm==1 && muon_1pt>14 && nj>2 && nb>1' #typical tt phase space
+            preSelect = 'nm==1 && muon_1pt>14 && nj>=2 && nb>=1' #typical tt phase space (switched from nj>2 to nj>=2)
         preSelect 
     df = df.Filter(preSelect)
     print('preselection: ', preSelect)
@@ -131,6 +162,11 @@ def preSel(inputNano,  outDir, ifForHadronic, ifTest):
     # era = uf.getEra(inputNano)
     era = uf.getEraNano(inputNano)
     print('era: ', era)
+
+    top_triggers = get_top_triggers_from_json(hltJSON, df)
+    print("TOP triggers found in JSON $ NanoAOD:")
+    for t in top_triggers:
+        print("  ", t)
        
     # List of branch names to keep
     branches_to_keep = [
@@ -151,6 +187,10 @@ def preSel(inputNano,  outDir, ifForHadronic, ifTest):
                         'HLT_Mu12_IsoVVL_PFHT150_PNetBTag0p53',#!added in 2024C after run 379613
                         "run",
                         ]
+
+    for trig in top_triggers:
+        if trig not in branches_to_keep:
+            branches_to_keep.append(trig)
    
     #check in run branch>379613 in df, then remove the ele and mu trigger in the branches_to_keep
     # afterRun = df.Filter('run>379613') #Some files including this run, still don't have the lepton cross triggers
@@ -159,8 +199,7 @@ def preSel(inputNano,  outDir, ifForHadronic, ifTest):
         branches_to_keep.remove('HLT_Ele14_eta2p5_IsoVVVL_Gsf_PFHT200_PNetBTag0p53')
         branches_to_keep.remove('HLT_Mu12_IsoVVL_PFHT150_PNetBTag0p53')
     # print('afterRun: ', afterRun.Count().GetValue())
-     
-        
+
     branches_to_keep.append('nj')
     branches_to_keep.append('nb')    
     branches_to_keep.append('HT')
@@ -189,22 +228,13 @@ def process_arguments():
     # Create an ArgumentParser object
     parser = argparse.ArgumentParser(description='Description of your script.')
  
-    # input = '/store/data/Run2023B/Muon0/NANOAOD/PromptNanoAODv11p9_v1-v2/60000/06d25571-df3e-4ceb-9e44-7452add3e004.root'
-    # input = '/store/data/Run2022C/Muon/NANOAOD/PromptNanoAODv10-v1/40000/d4484006-7e4b-424e-86a4-346d17d862f8.root'
-    # input = '/store/data/Run2024E/Muon0/NANOAOD/PromptReco-v1/000/380/956/00000/8413549d-588b-46ff-9c53-b98b34faa7e7.root'
-    # input = '/store/data/Run2024D/Muon0/NANOAOD/PromptReco-v1/000/380/346/00000/3c839fb5-92c1-4140-a9ab-1efe2ad80a60.root'
     input = '/store/data/Run2024C/Muon1/NANOAOD/PromptReco-v1/000/380/195/00000/0567ac8a-b6c6-466e-b0da-0474f2bbeea6.root'
-    # input = '/store/data/Run2024F/Muon0/NANOAOD/PromptReco-v1/000/383/367/00000/407206b5-4ab2-45e4-a40b-0d150ff3263a.root'
-    # input = '/store/data/Run2024F/EGamma1/NANOAOD/PromptReco-v1/000/382/165/00000/f5235ff3-bb75-4c73-8c6a-d1b1b5fcdf39.root'
-    # input = '/store/data/Run2024G/Muon0/NANOAOD/PromptReco-v1/000/383/814/00000/c96be705-bd3e-4cde-8967-ed77e70a6424.root'
-    # input = '/store/data/Run2024G/EGamma1/NANOAOD/PromptReco-v1/000/384/610/00000/765b14d1-f959-4a2e-8c75-6a91c75ca85f.root'#!seems problem with reading this file from jobs
     # Add arguments
     parser.add_argument('--input', type=str, default=input)
     parser.add_argument('--outDir', type=str, default='./output/')
-    # parser.add_argument('--ifHadronic', type=bool, default=True)
-    # parser.add_argument('--ifTest', type=bool, default=True)
     parser.add_argument('--ifHadronic', type=str2bool, default=True, help='Boolean flag for hadronic')
     parser.add_argument('--ifTest', type=str2bool, default=True, help='Boolean flag for test mode')
+    parser.add_argument('--hltJSON', type=str, default='./ownershipJson.json', help='Path to JSON of HLT menu (owners, online)')
 
 
       # Parse the command-line arguments
@@ -215,7 +245,8 @@ def process_arguments():
         'input': args.input,
         'outDir': args.outDir,
         'ifHadronic': args.ifHadronic,
-        'ifTest': args.ifTest
+        'ifTest': args.ifTest,
+        'hltJSON': args.hltJSON
     }
 
     return arguments
@@ -235,5 +266,5 @@ def str2bool(value):
 
 if __name__=='__main__':
     args = process_arguments()
-    main(args['input'], args['outDir'], args['ifHadronic'], args['ifTest'])
+    main(args['input'], args['outDir'], args['ifHadronic'], args['ifTest'], args['hltJSON'])
 

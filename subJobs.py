@@ -8,6 +8,7 @@ def parse_args():
     parser.add_argument("--user", choices=["victor", "cristina", "hhua"], default="cristina", help="User identity for output paths")
     parser.add_argument("--ifHadronic", action="store_true", help="Flag to process hadronic selection")
     parser.add_argument("--jobVersion", required=True, help="Job version label, e.g. v1ForMuon2024I")
+    parser.add_argument('--hltJSON', type=str, default='./ownershipJson.json', help='Path to JSON of HLT menu (owners, online)')
     return parser.parse_args()
 
 def extract_era(tag):
@@ -32,14 +33,15 @@ def get_list_from_txt(inFile):
 def get_name_from_path(file_path):
     return os.path.splitext(os.path.basename(file_path))[0]
 
-def write_job_script(jobName, inFile, outDir, ifHadronic):
+def write_job_script(jobName, inFile, outDir, ifHadronic, hltJSON):
     current_dir = os.path.dirname(os.path.abspath(__file__))
+    hltJSON_abs = os.path.abspath(hltJSON)
     lines = [
         "#!/bin/bash",
         f"cd {current_dir}",
         f"lines=(`cat {current_dir}/{inFile}`)",
         "echo ${lines[$1]}",
-        f"python3 skimNano.py --input ${{lines[$1]}} --outDir {outDir} --ifHadronic {ifHadronic} --ifTest False"
+        f"python3 skimNano.py --input ${{lines[$1]}} --outDir {outDir} --ifHadronic {ifHadronic} --ifTest False --hltJSON {hltJSON_abs}"
     ]
     write_list_to_file(lines, jobName)
 
@@ -92,7 +94,7 @@ def main():
     uf.checkMakeDir(jobDir)
     uf.checkMakeDir(logDir)
 
-    write_job_script(os.path.join(jobDir, "singleJob.sh"), inputList, outDir, args.ifHadronic)
+    write_job_script(os.path.join(jobDir, "singleJob.sh"), inputList, outDir, args.ifHadronic, args.hltJSON)
     write_sub_file(os.path.join(jobDir, "subList.sub"), jobDir, fileNum, args.user)
     sub_htcondor(os.path.join(jobDir, "subList.sub"))
 
