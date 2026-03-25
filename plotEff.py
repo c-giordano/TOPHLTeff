@@ -17,6 +17,7 @@ parser.add_argument("--include-2024", action="store_true", help="If set, append 
 parser.add_argument("--special", action="store_true", help="Compare pre/post digi-morphing for a single era")
 parser.add_argument("--specialEra",type=str, default="2025G", help="Era used for digi comparison (default: 2025G), ignored if --special is not set")
 parser.add_argument("--inputDir", type=str, default=None, help="(es. v5ForMuon2025_10)")
+parser.add_argument("--subDir", type=str, default=None, help="subDir inside inputDir")
 
 args = parser.parse_args()
 
@@ -60,11 +61,11 @@ def build_eff_path(hlt_family, era, stage=None):
     # 2025X
     if era.startswith("2025"):
         if hlt_family == "hadronic":
-            tag_base = "v5Hadronic_{}".format(era)
+            tag_base = "{}_{}_ttH".format(args.subDir, era)
         elif hlt_family == "muon":
-            tag_base = "v5Muon_{}".format(era)
+            tag_base = "{}_{}_ttbar".format(args.subDir, era)
         elif hlt_family == "electron":
-            tag_base = "v5Electron_{}".format(era)
+            tag_base = "{}_{}_ttbar".format(args.subDir, era)
         else:
             raise ValueError("Unknown HLT family: {}".format(hlt_family))
 
@@ -190,7 +191,8 @@ def main():
             eras = args.eras
         else:
             # default ragionevole
-            eras = ["2025C", "2025D", "2025E", "2025F", "2025G"]
+            # eras = ["2025C", "2025D", "2025E", "2025F", "2025G"]
+            eras = ["2025D", "2025E", "2025F", "2025G"]
 
         if args.include_2024 and "2024I" not in eras:
             eras.append("2024I")

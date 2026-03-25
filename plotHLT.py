@@ -22,20 +22,25 @@ def main():
     args = parse_args()
 
     offline_map = {
-        "ttH": "HT>500. && nj>5 && nb>1 && HLT_IsoMu24==1 && jet_6pt>40.",
-        "ttbar_ele": "ne==1 && ele_1pt>16. && nj>2 && nb>1 && HLT_IsoMu24==1 && HT>200.",
-        "ttbar_mu": "nm==1 && muon_1pt>14. && nj>2 && nb>1 && HLT_Ele30_WPTight_Gsf==1 && HT>200."
+        "ttH": "HT>500. && nj>=5 && nb>=1 && HLT_IsoMu24==1 && jet_4pt>40.", #tmp removal of jet_6pt>40 because I am not sure about this selection
+        "ttbar_ele": "ne==1 && ele_1pt>16. && nj>=2 && nb>=1 && HLT_IsoMu24==1 && HT>200.",
+        "ttbar_mu": "nm==1 && muon_1pt>14. && nj>=2 && nb>=1 && HLT_Ele30_WPTight_Gsf==1 && HT>200."
     }
     offline = offline_map.get(args.offline, args.offline)
+    
     if args.otherCuts:
         offline = f"({offline}) && ({args.otherCuts})"
+
+    print(f"Offline cut: {offline}")
 
     outFile = create_output_file(args.inputDir, args.outVersion, args.isTest)
 
     if args.isHadronic:
         run_hadronic_analysis(args.inputDir, outFile, args.era, offline)
+        print("Running hadronic analysis")
     else:
         run_leptonic_analysis(args.inputDir, outFile, offline, args.era, args.ifMuonHLT)
+        print("Running leptonic analysis")
 
 def run_hadronic_analysis(inputDir, outFile, era, offline):
     df = ROOT.RDataFrame('Events', inputDir + '*.root')
@@ -77,8 +82,10 @@ def run_leptonic_analysis(inputDir, outFile, offline, era, ifMuonHLT):
 
     if ifMuonHLT:
         single, cross, lep, label = 'HLT_IsoMu24', 'HLT_Mu12_IsoVVL_PFHT150_PNetBTag0p53', 'muon', 'Mu'
+        print("Lepton is muon")
     else:
         single, cross, lep, label = 'HLT_Ele30_WPTight_Gsf', 'HLT_Ele14_eta2p5_IsoVVVL_Gsf_PFHT200_PNetBTag0p53', 'ele', 'Ele'
+        print("Lepton is electron")
 
     bins = {
         # Old Binning ##################
@@ -107,6 +114,7 @@ def run_leptonic_analysis(inputDir, outFile, offline, era, ifMuonHLT):
     write_histograms(histList, outFile)
 
 def make_hist_pair(df, offline, HLT, variable, title, bins, tag):
+    # print("Creating histogram pairs")
     df_sel = df.Filter(offline)
     bins = np.array(bins, dtype='float64')
     de = df_sel.Histo1D((f"de_{variable}_{tag}", title, len(bins) - 1, bins), variable)
@@ -116,6 +124,7 @@ def make_hist_pair(df, offline, HLT, variable, title, bins, tag):
 def create_output_file(inputDir, version, isTest):
     outDir = os.path.join(inputDir if not isTest else 'output/', 'result', version)
     os.makedirs(outDir, exist_ok=True)
+    print(f"Results will be written in {outDir}")
     return ROOT.TFile(os.path.join(outDir, 'eff.root'), 'RECREATE')
 
 def write_histograms(histList, outFile):

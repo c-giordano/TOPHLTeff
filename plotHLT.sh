@@ -1,3 +1,9 @@
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2026B/v0ForHadronic2026_27/ --era 2026B --outVersion ttH --isHadronic --offline ttH
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2026B/v0ForElectron2026_27/ --era 2026B --outVersion ttbar --offline ttbar_ele
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2026B/v0ForMuon2026_27/ --era 2026B --outVersion ttbar --offline ttbar_mu
+
+
+
 # python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2024I/v1ForHadronic2024/ --era 2024I --outVersion attempt_2024I --isHadronic --offline ttH 
 
 # python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025C/v4ForHadronic2025_08/ --era 2025C --outVersion v4Hadronic_2025C --isHadronic --offline ttH
@@ -45,11 +51,24 @@
 # python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2024I/v1ForEle2024I/ --era 2024I --outVersion v5Muon_2024I --offline ttbar_ele
 
 
-python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForHadronic2025_10/ --era 2025G --outVersion v5Hadronic_2025G_preDigi --isHadronic --offline ttH --otherCuts "run < 398288"
-python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForHadronic2025_10/ --era 2025G --outVersion v5Hadronic_2025G_postDigi --isHadronic --offline ttH --otherCuts "run >= 398288"
-python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForElectron2025_10/ --era 2025G --outVersion v5Electron_2025G_preDigi --offline ttbar_ele --otherCuts "run < 398288"
-python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForElectron2025_10/ --era 2025G --outVersion v5Electron_2025G_postDigi --offline ttbar_ele --otherCuts "run >= 398288"
-python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForMuon2025_10/ --era 2025G --outVersion v5Muon_2025G_preDigi --ifMuonHLT --offline ttbar_mu --otherCuts "run < 398288"
-python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForMuon2025_10/ --era 2025G --outVersion v5Muon_2025G_postDigi --ifMuonHLT --offline ttbar_mu --otherCuts "run >= 398288"
+# python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForHadronic2025_10/ --era 2025G --outVersion v5Hadronic_2025G_preDigi --isHadronic --offline ttH --otherCuts "run < 398288"
+# python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForHadronic2025_10/ --era 2025G --outVersion v5Hadronic_2025G_postDigi --isHadronic --offline ttH --otherCuts "run >= 398288"
+# python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForElectron2025_10/ --era 2025G --outVersion v5Electron_2025G_preDigi --offline ttbar_ele --otherCuts "run < 398288"
+# python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForElectron2025_10/ --era 2025G --outVersion v5Electron_2025G_postDigi --offline ttbar_ele --otherCuts "run >= 398288"
+# python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForMuon2025_10/ --era 2025G --outVersion v5Muon_2025G_preDigi --ifMuonHLT --offline ttbar_mu --otherCuts "run < 398288"
+# python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForMuon2025_10/ --era 2025G --outVersion v5Muon_2025G_postDigi --ifMuonHLT --offline ttbar_mu --otherCuts "run >= 398288"
 
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025D/v5ForMuon2025_11/ --era 2025D --outVersion v6Muon_2025_ttbar --ifMuonHLT --offline ttbar_mu
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025E/v5ForMuon2025_11/ --era 2025E --outVersion v6Muon_2025_ttbar --ifMuonHLT --offline ttbar_mu
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025F/v5ForMuon2025_11/ --era 2025F --outVersion v6Muon_2025_ttbar --ifMuonHLT --offline ttbar_mu
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForMuon2025_11/ --era 2025G --outVersion v6Muon_2025_ttbar --ifMuonHLT --offline ttbar_mu
 
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025D/v5ForElectron2025_11/ --era 2025D --outVersion v6Ele_2025_ttbar --offline ttbar_ele
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025E/v5ForElectron2025_11/ --era 2025E --outVersion v6Ele_2025_ttbar --offline ttbar_ele
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025F/v5ForElectron2025_11/ --era 2025F --outVersion v6Ele_2025_ttbar --offline ttbar_ele
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForElectron2025_11/ --era 2025G --outVersion v6Ele_2025_ttbar --offline ttbar_ele
+
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025D/v5ForHadronic2025_11/ --era 2025D --outVersion v6Had_2025_ttH --offline ttH
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025E/v5ForHadronic2025_11/ --era 2025E --outVersion v6Had_202E_ttH --offline ttH
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025F/v5ForHadronic2025_11/ --era 2025F --outVersion v6Had_2025_ttH --offline ttH
+python3 plotHLT.py --inputDir /eos/user/c/cgiordan/forTopHLT/2025G/v5ForHadronic2025_11/ --era 2025G --outVersion v6Had_2025_ttH --offline ttH

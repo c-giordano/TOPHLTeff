@@ -19,18 +19,19 @@ triggerSwitchedMap = {
     '2025E': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
     '2025F': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
     '2025G': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3',
+    '2026B': 'HLT_PFHT330PT30_QuadPFJet_75_60_45_40_PNet3BTag_4p3'
 } 
 
-def main(inputNano = '/store/data/Run2023B/Muon0/NANOAOD/PromptNanoAODv11p9_v1-v2/60000/06d25571-df3e-4ceb-9e44-7452add3e004.root', outDir = './output/', ifForHadronic = True,   ifTest = True, hltJSON='ownershipJson.json'):
+def main(inputNano = '/store/data/Run2023B/Muon0/NANOAOD/PromptNanoAODv11p9_v1-v2/60000/06d25571-df3e-4ceb-9e44-7452add3e004.root', outDir = './output/', ifHadronic = True,   ifTest = True, hltJSON='ownershipJson.json'):
     #!test default input files in parse_arguments()
     print('inputNano: ', inputNano)
-    print('outDir: ', outDir, 'ifForHadronic: ', ifForHadronic, 'ifTest: ', ifTest)
+    print('outDir: ', outDir, 'ifHadronic: ', ifHadronic, 'ifTest: ', ifTest)
     inputNano = 'root://cmsxrootd.fnal.gov/'+ inputNano
-    preSel(inputNano,  outDir, ifForHadronic, ifTest, hltJSON)#faster run time with rDataFrame
+    preSel(inputNano,  outDir, ifHadronic, ifTest, hltJSON)#faster run time with rDataFrame
     
-    # selLoop(chain, branches_to_keep, outDir, ifForHadronic, ifTest)#!obsolete, keep it for now
+    # selLoop(chain, branches_to_keep, outDir, ifHadronic, ifTest)#!obsolete, keep it for now
     
-def preSel(inputNano,  outDir, ifForHadronic, ifTest, hltJSON):
+def preSel(inputNano,  outDir, ifHadronic, ifTest, hltJSON):
     #faster and better with rDataFrame:)
     ROOT.gInterpreter.Declare("""
     #include <vector>
@@ -142,7 +143,7 @@ def preSel(inputNano,  outDir, ifForHadronic, ifTest, hltJSON):
 
     # preSelect = 'nj>5 && HT>500. && nb>1'
     preSelect = 'nj>=4 && HT>=200. && nb>=1' # new loosened cut
-    if not ifForHadronic:
+    if not ifHadronic:
         ifEleDataset = inputNano.find('EGamma')!=-1
         print('ifEleDataset: ', ifEleDataset)
         if not ifEleDataset:#for ele trigger
